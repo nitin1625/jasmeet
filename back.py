@@ -15,7 +15,9 @@ llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=GEMINI_API_KEY)
 app = Flask(__name__)
 CORS(app)
 
-def get_youtube_comments(video_url, api_key):
+api_key = os.getenv('YOUTUBE_API_KEY')
+
+def get_youtube_comments(video_url):
     video_id = video_url.split('v=')[1].split('&')[0]
 
     youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=api_key)
@@ -113,21 +115,24 @@ def analyze_comments(comments):
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
-
     json_content = request.json
     video_url = json_content.get("url")
+
+    if not video_url:
+        return jsonify({'error': 'URL not provided'}), 400  
 
     try:
         comments = get_youtube_comments(video_url)
         if not comments:
-            return ({'error': 'No comments found'})
+            return jsonify({'error': 'No comments found'}), 404  
 
         cleaned_comments = preprocess_comments(comments)
         analysis = analyze_comments(cleaned_comments)
-        return (analysis)
+        return jsonify(analysis), 200  
     
     except Exception as e:
-        return ({'error': str(e)})
+        return jsonify({'error': str(e)}), 500  
+
     
 
 

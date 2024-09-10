@@ -4,10 +4,13 @@ import os
 from back import get_youtube_comments, preprocess_comments, analyze_comments
 
 
+load_dotenv()
+youtube_api_key = os.getenv('YOUTUBE_API_KEY')
+
 
 def analyze(video_url):
     try:
-        comments = get_youtube_comments(video_url)
+        comments = get_youtube_comments(video_url, youtube_api_key)
         if not comments:
             return ({'error': 'No comments found'})
 
